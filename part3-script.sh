@@ -72,6 +72,8 @@ jar -tf transactioncount.jar
 # Copy the newly compiled JAR file from your local machine to the master container
 docker cp transactioncount.jar master:/tmp/transactioncount.jar
 
+docker exec -it master hdfs dfsadmin -safemode leave
+
 # Now, execute the Hadoop job command inside the master container.
 # Make sure to remove any previous output directory to avoid errors.
 docker exec -it master /bin/bash -c "hdfs dfs -rm -r /user/hadoop/output_transactions || true && hadoop jar /tmp/transactioncount.jar com.yourcompany.hadoop.TransactionCount /user/hadoop/input /user/hadoop/output_transactions"
