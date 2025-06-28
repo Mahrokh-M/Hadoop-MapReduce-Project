@@ -1,0 +1,65 @@
+version: '3.8'
+services:
+  master:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    hostname: master
+    container_name: master
+    ports:
+      - "9870:9870" # NameNode UI
+      - "8088:8088" # ResourceManager UI
+      - "9000:9000" # HDFS NameNode RPC
+      - "8020:8020" # HDFS Client RPC
+    volumes:
+      - master_namenode_data:/opt/hadoop_data/namenode # Persistent NameNode metadata
+      - master_tmp_data:/opt/hadoop_data/tmp # Temporary data
+    networks:
+      - hadoop_network
+    environment:
+      # Ensure SSH is running for inter-container communication
+      - SSH_PORT=22
+
+  slave1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    hostname: slave1
+    container_name: slave1
+    volumes:
+      - slave1_datanode_data:/opt/hadoop_data/datanode # Persistent DataNode blocks
+      - slave1_tmp_data:/opt/hadoop_data/tmp # Temporary data
+    networks:
+      - hadoop_network
+    environment:
+      - SSH_PORT=22
+    depends_on:
+      - master
+
+  slave2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    hostname: slave2
+    container_name: slave2
+    volumes:
+      - slave2_datanode_data:/opt/hadoop_data/datanode # Persistent DataNode blocks
+      - slave2_tmp_data:/opt/hadoop_data/tmp # Temporary data
+    networks:
+      - hadoop_network
+    environment:
+      - SSH_PORT=22
+    depends_on:
+      - master
+
+networks:
+  hadoop_network:
+    driver: bridge
+
+volumes:
+  master_namenode_data:
+  master_tmp_data:
+  slave1_datanode_data:
+  slave1_tmp_data:
+  slave2_datanode_data:
+  slave2_tmp_data:
